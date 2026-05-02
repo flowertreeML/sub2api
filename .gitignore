@@ -1,6 +1,9 @@
 docs/claude-relay-service/
 .codex
 
+# W1 本地开发：deploy/.env 包含真实 API key，不入 git
+deploy/.env
+
 # ===================
 # Go 后端
 # ===================
