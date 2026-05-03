@@ -214,7 +214,13 @@ func (h *GatewayHandler) ChatCompletions(c *gin.Context) {
 		if channelMapping.Mapped {
 			forwardBody = h.gatewayService.ReplaceModelInBody(body, channelMapping.MappedModel)
 		}
-		result, err := h.gatewayService.ForwardAsChatCompletions(c.Request.Context(), c, account, forwardBody, parsedReq)
+		var result *service.ForwardResult
+		if account.Platform == service.PlatformZhipu {
+			// 智谱 GLM 没有 Responses API，必须直转 Chat Completions，不能进入 Anthropic/OpenAI 转换链。
+			result, err = h.gatewayService.ZhipuChatCompletions(c.Request.Context(), c, account, forwardBody, reqStream)
+		} else {
+			result, err = h.gatewayService.ForwardAsChatCompletions(c.Request.Context(), c, account, forwardBody, parsedReq)
+		}
 
 		if accountReleaseFunc != nil {
 			accountReleaseFunc()
