@@ -181,6 +181,34 @@ func (_c *AccountCreate) SetNillableRateMultiplier(v *float64) *AccountCreate {
 	return _c
 }
 
+// SetCostPerMillionInput sets the "cost_per_million_input" field.
+func (_c *AccountCreate) SetCostPerMillionInput(v float64) *AccountCreate {
+	_c.mutation.SetCostPerMillionInput(v)
+	return _c
+}
+
+// SetNillableCostPerMillionInput sets the "cost_per_million_input" field if the given value is not nil.
+func (_c *AccountCreate) SetNillableCostPerMillionInput(v *float64) *AccountCreate {
+	if v != nil {
+		_c.SetCostPerMillionInput(*v)
+	}
+	return _c
+}
+
+// SetCostPerMillionOutput sets the "cost_per_million_output" field.
+func (_c *AccountCreate) SetCostPerMillionOutput(v float64) *AccountCreate {
+	_c.mutation.SetCostPerMillionOutput(v)
+	return _c
+}
+
+// SetNillableCostPerMillionOutput sets the "cost_per_million_output" field if the given value is not nil.
+func (_c *AccountCreate) SetNillableCostPerMillionOutput(v *float64) *AccountCreate {
+	if v != nil {
+		_c.SetCostPerMillionOutput(*v)
+	}
+	return _c
+}
+
 // SetStatus sets the "status" field.
 func (_c *AccountCreate) SetStatus(v string) *AccountCreate {
 	_c.mutation.SetStatus(v)
@@ -649,6 +677,14 @@ func (_c *AccountCreate) createSpec() (*Account, *sqlgraph.CreateSpec) {
 		_spec.SetField(account.FieldRateMultiplier, field.TypeFloat64, value)
 		_node.RateMultiplier = value
 	}
+	if value, ok := _c.mutation.CostPerMillionInput(); ok {
+		_spec.SetField(account.FieldCostPerMillionInput, field.TypeFloat64, value)
+		_node.CostPerMillionInput = &value
+	}
+	if value, ok := _c.mutation.CostPerMillionOutput(); ok {
+		_spec.SetField(account.FieldCostPerMillionOutput, field.TypeFloat64, value)
+		_node.CostPerMillionOutput = &value
+	}
 	if value, ok := _c.mutation.Status(); ok {
 		_spec.SetField(account.FieldStatus, field.TypeString, value)
 		_node.Status = value
@@ -1011,6 +1047,54 @@ func (u *AccountUpsert) UpdateRateMultiplier() *AccountUpsert {
 // AddRateMultiplier adds v to the "rate_multiplier" field.
 func (u *AccountUpsert) AddRateMultiplier(v float64) *AccountUpsert {
 	u.Add(account.FieldRateMultiplier, v)
+	return u
+}
+
+// SetCostPerMillionInput sets the "cost_per_million_input" field.
+func (u *AccountUpsert) SetCostPerMillionInput(v float64) *AccountUpsert {
+	u.Set(account.FieldCostPerMillionInput, v)
+	return u
+}
+
+// UpdateCostPerMillionInput sets the "cost_per_million_input" field to the value that was provided on create.
+func (u *AccountUpsert) UpdateCostPerMillionInput() *AccountUpsert {
+	u.SetExcluded(account.FieldCostPerMillionInput)
+	return u
+}
+
+// AddCostPerMillionInput adds v to the "cost_per_million_input" field.
+func (u *AccountUpsert) AddCostPerMillionInput(v float64) *AccountUpsert {
+	u.Add(account.FieldCostPerMillionInput, v)
+	return u
+}
+
+// ClearCostPerMillionInput clears the value of the "cost_per_million_input" field.
+func (u *AccountUpsert) ClearCostPerMillionInput() *AccountUpsert {
+	u.SetNull(account.FieldCostPerMillionInput)
+	return u
+}
+
+// SetCostPerMillionOutput sets the "cost_per_million_output" field.
+func (u *AccountUpsert) SetCostPerMillionOutput(v float64) *AccountUpsert {
+	u.Set(account.FieldCostPerMillionOutput, v)
+	return u
+}
+
+// UpdateCostPerMillionOutput sets the "cost_per_million_output" field to the value that was provided on create.
+func (u *AccountUpsert) UpdateCostPerMillionOutput() *AccountUpsert {
+	u.SetExcluded(account.FieldCostPerMillionOutput)
+	return u
+}
+
+// AddCostPerMillionOutput adds v to the "cost_per_million_output" field.
+func (u *AccountUpsert) AddCostPerMillionOutput(v float64) *AccountUpsert {
+	u.Add(account.FieldCostPerMillionOutput, v)
+	return u
+}
+
+// ClearCostPerMillionOutput clears the value of the "cost_per_million_output" field.
+func (u *AccountUpsert) ClearCostPerMillionOutput() *AccountUpsert {
+	u.SetNull(account.FieldCostPerMillionOutput)
 	return u
 }
 
@@ -1528,6 +1612,62 @@ func (u *AccountUpsertOne) AddRateMultiplier(v float64) *AccountUpsertOne {
 func (u *AccountUpsertOne) UpdateRateMultiplier() *AccountUpsertOne {
 	return u.Update(func(s *AccountUpsert) {
 		s.UpdateRateMultiplier()
+	})
+}
+
+// SetCostPerMillionInput sets the "cost_per_million_input" field.
+func (u *AccountUpsertOne) SetCostPerMillionInput(v float64) *AccountUpsertOne {
+	return u.Update(func(s *AccountUpsert) {
+		s.SetCostPerMillionInput(v)
+	})
+}
+
+// AddCostPerMillionInput adds v to the "cost_per_million_input" field.
+func (u *AccountUpsertOne) AddCostPerMillionInput(v float64) *AccountUpsertOne {
+	return u.Update(func(s *AccountUpsert) {
+		s.AddCostPerMillionInput(v)
+	})
+}
+
+// UpdateCostPerMillionInput sets the "cost_per_million_input" field to the value that was provided on create.
+func (u *AccountUpsertOne) UpdateCostPerMillionInput() *AccountUpsertOne {
+	return u.Update(func(s *AccountUpsert) {
+		s.UpdateCostPerMillionInput()
+	})
+}
+
+// ClearCostPerMillionInput clears the value of the "cost_per_million_input" field.
+func (u *AccountUpsertOne) ClearCostPerMillionInput() *AccountUpsertOne {
+	return u.Update(func(s *AccountUpsert) {
+		s.ClearCostPerMillionInput()
+	})
+}
+
+// SetCostPerMillionOutput sets the "cost_per_million_output" field.
+func (u *AccountUpsertOne) SetCostPerMillionOutput(v float64) *AccountUpsertOne {
+	return u.Update(func(s *AccountUpsert) {
+		s.SetCostPerMillionOutput(v)
+	})
+}
+
+// AddCostPerMillionOutput adds v to the "cost_per_million_output" field.
+func (u *AccountUpsertOne) AddCostPerMillionOutput(v float64) *AccountUpsertOne {
+	return u.Update(func(s *AccountUpsert) {
+		s.AddCostPerMillionOutput(v)
+	})
+}
+
+// UpdateCostPerMillionOutput sets the "cost_per_million_output" field to the value that was provided on create.
+func (u *AccountUpsertOne) UpdateCostPerMillionOutput() *AccountUpsertOne {
+	return u.Update(func(s *AccountUpsert) {
+		s.UpdateCostPerMillionOutput()
+	})
+}
+
+// ClearCostPerMillionOutput clears the value of the "cost_per_million_output" field.
+func (u *AccountUpsertOne) ClearCostPerMillionOutput() *AccountUpsertOne {
+	return u.Update(func(s *AccountUpsert) {
+		s.ClearCostPerMillionOutput()
 	})
 }
 
@@ -2250,6 +2390,62 @@ func (u *AccountUpsertBulk) AddRateMultiplier(v float64) *AccountUpsertBulk {
 func (u *AccountUpsertBulk) UpdateRateMultiplier() *AccountUpsertBulk {
 	return u.Update(func(s *AccountUpsert) {
 		s.UpdateRateMultiplier()
+	})
+}
+
+// SetCostPerMillionInput sets the "cost_per_million_input" field.
+func (u *AccountUpsertBulk) SetCostPerMillionInput(v float64) *AccountUpsertBulk {
+	return u.Update(func(s *AccountUpsert) {
+		s.SetCostPerMillionInput(v)
+	})
+}
+
+// AddCostPerMillionInput adds v to the "cost_per_million_input" field.
+func (u *AccountUpsertBulk) AddCostPerMillionInput(v float64) *AccountUpsertBulk {
+	return u.Update(func(s *AccountUpsert) {
+		s.AddCostPerMillionInput(v)
+	})
+}
+
+// UpdateCostPerMillionInput sets the "cost_per_million_input" field to the value that was provided on create.
+func (u *AccountUpsertBulk) UpdateCostPerMillionInput() *AccountUpsertBulk {
+	return u.Update(func(s *AccountUpsert) {
+		s.UpdateCostPerMillionInput()
+	})
+}
+
+// ClearCostPerMillionInput clears the value of the "cost_per_million_input" field.
+func (u *AccountUpsertBulk) ClearCostPerMillionInput() *AccountUpsertBulk {
+	return u.Update(func(s *AccountUpsert) {
+		s.ClearCostPerMillionInput()
+	})
+}
+
+// SetCostPerMillionOutput sets the "cost_per_million_output" field.
+func (u *AccountUpsertBulk) SetCostPerMillionOutput(v float64) *AccountUpsertBulk {
+	return u.Update(func(s *AccountUpsert) {
+		s.SetCostPerMillionOutput(v)
+	})
+}
+
+// AddCostPerMillionOutput adds v to the "cost_per_million_output" field.
+func (u *AccountUpsertBulk) AddCostPerMillionOutput(v float64) *AccountUpsertBulk {
+	return u.Update(func(s *AccountUpsert) {
+		s.AddCostPerMillionOutput(v)
+	})
+}
+
+// UpdateCostPerMillionOutput sets the "cost_per_million_output" field to the value that was provided on create.
+func (u *AccountUpsertBulk) UpdateCostPerMillionOutput() *AccountUpsertBulk {
+	return u.Update(func(s *AccountUpsert) {
+		s.UpdateCostPerMillionOutput()
+	})
+}
+
+// ClearCostPerMillionOutput clears the value of the "cost_per_million_output" field.
+func (u *AccountUpsertBulk) ClearCostPerMillionOutput() *AccountUpsertBulk {
+	return u.Update(func(s *AccountUpsert) {
+		s.ClearCostPerMillionOutput()
 	})
 }
 

@@ -43,6 +43,10 @@ const (
 	FieldPriority = "priority"
 	// FieldRateMultiplier holds the string denoting the rate_multiplier field in the database.
 	FieldRateMultiplier = "rate_multiplier"
+	// FieldCostPerMillionInput holds the string denoting the cost_per_million_input field in the database.
+	FieldCostPerMillionInput = "cost_per_million_input"
+	// FieldCostPerMillionOutput holds the string denoting the cost_per_million_output field in the database.
+	FieldCostPerMillionOutput = "cost_per_million_output"
 	// FieldStatus holds the string denoting the status field in the database.
 	FieldStatus = "status"
 	// FieldErrorMessage holds the string denoting the error_message field in the database.
@@ -126,6 +130,8 @@ var Columns = []string{
 	FieldLoadFactor,
 	FieldPriority,
 	FieldRateMultiplier,
+	FieldCostPerMillionInput,
+	FieldCostPerMillionOutput,
 	FieldStatus,
 	FieldErrorMessage,
 	FieldLastUsedAt,
@@ -266,6 +272,16 @@ func ByPriority(opts ...sql.OrderTermOption) OrderOption {
 // ByRateMultiplier orders the results by the rate_multiplier field.
 func ByRateMultiplier(opts ...sql.OrderTermOption) OrderOption {
 	return sql.OrderByField(FieldRateMultiplier, opts...).ToFunc()
+}
+
+// ByCostPerMillionInput orders the results by the cost_per_million_input field.
+func ByCostPerMillionInput(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCostPerMillionInput, opts...).ToFunc()
+}
+
+// ByCostPerMillionOutput orders the results by the cost_per_million_output field.
+func ByCostPerMillionOutput(opts ...sql.OrderTermOption) OrderOption {
+	return sql.OrderByField(FieldCostPerMillionOutput, opts...).ToFunc()
 }
 
 // ByStatus orders the results by the status field.

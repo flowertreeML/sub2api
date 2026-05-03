@@ -241,6 +241,60 @@ func (_u *AccountUpdate) AddRateMultiplier(v float64) *AccountUpdate {
 	return _u
 }
 
+// SetCostPerMillionInput sets the "cost_per_million_input" field.
+func (_u *AccountUpdate) SetCostPerMillionInput(v float64) *AccountUpdate {
+	_u.mutation.ResetCostPerMillionInput()
+	_u.mutation.SetCostPerMillionInput(v)
+	return _u
+}
+
+// SetNillableCostPerMillionInput sets the "cost_per_million_input" field if the given value is not nil.
+func (_u *AccountUpdate) SetNillableCostPerMillionInput(v *float64) *AccountUpdate {
+	if v != nil {
+		_u.SetCostPerMillionInput(*v)
+	}
+	return _u
+}
+
+// AddCostPerMillionInput adds value to the "cost_per_million_input" field.
+func (_u *AccountUpdate) AddCostPerMillionInput(v float64) *AccountUpdate {
+	_u.mutation.AddCostPerMillionInput(v)
+	return _u
+}
+
+// ClearCostPerMillionInput clears the value of the "cost_per_million_input" field.
+func (_u *AccountUpdate) ClearCostPerMillionInput() *AccountUpdate {
+	_u.mutation.ClearCostPerMillionInput()
+	return _u
+}
+
+// SetCostPerMillionOutput sets the "cost_per_million_output" field.
+func (_u *AccountUpdate) SetCostPerMillionOutput(v float64) *AccountUpdate {
+	_u.mutation.ResetCostPerMillionOutput()
+	_u.mutation.SetCostPerMillionOutput(v)
+	return _u
+}
+
+// SetNillableCostPerMillionOutput sets the "cost_per_million_output" field if the given value is not nil.
+func (_u *AccountUpdate) SetNillableCostPerMillionOutput(v *float64) *AccountUpdate {
+	if v != nil {
+		_u.SetCostPerMillionOutput(*v)
+	}
+	return _u
+}
+
+// AddCostPerMillionOutput adds value to the "cost_per_million_output" field.
+func (_u *AccountUpdate) AddCostPerMillionOutput(v float64) *AccountUpdate {
+	_u.mutation.AddCostPerMillionOutput(v)
+	return _u
+}
+
+// ClearCostPerMillionOutput clears the value of the "cost_per_million_output" field.
+func (_u *AccountUpdate) ClearCostPerMillionOutput() *AccountUpdate {
+	_u.mutation.ClearCostPerMillionOutput()
+	return _u
+}
+
 // SetStatus sets the "status" field.
 func (_u *AccountUpdate) SetStatus(v string) *AccountUpdate {
 	_u.mutation.SetStatus(v)
@@ -732,6 +786,24 @@ func (_u *AccountUpdate) sqlSave(ctx context.Context) (_node int, err error) {
 	if value, ok := _u.mutation.AddedRateMultiplier(); ok {
 		_spec.AddField(account.FieldRateMultiplier, field.TypeFloat64, value)
 	}
+	if value, ok := _u.mutation.CostPerMillionInput(); ok {
+		_spec.SetField(account.FieldCostPerMillionInput, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.AddedCostPerMillionInput(); ok {
+		_spec.AddField(account.FieldCostPerMillionInput, field.TypeFloat64, value)
+	}
+	if _u.mutation.CostPerMillionInputCleared() {
+		_spec.ClearField(account.FieldCostPerMillionInput, field.TypeFloat64)
+	}
+	if value, ok := _u.mutation.CostPerMillionOutput(); ok {
+		_spec.SetField(account.FieldCostPerMillionOutput, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.AddedCostPerMillionOutput(); ok {
+		_spec.AddField(account.FieldCostPerMillionOutput, field.TypeFloat64, value)
+	}
+	if _u.mutation.CostPerMillionOutputCleared() {
+		_spec.ClearField(account.FieldCostPerMillionOutput, field.TypeFloat64)
+	}
 	if value, ok := _u.mutation.Status(); ok {
 		_spec.SetField(account.FieldStatus, field.TypeString, value)
 	}
@@ -1165,6 +1237,60 @@ func (_u *AccountUpdateOne) SetNillableRateMultiplier(v *float64) *AccountUpdate
 // AddRateMultiplier adds value to the "rate_multiplier" field.
 func (_u *AccountUpdateOne) AddRateMultiplier(v float64) *AccountUpdateOne {
 	_u.mutation.AddRateMultiplier(v)
+	return _u
+}
+
+// SetCostPerMillionInput sets the "cost_per_million_input" field.
+func (_u *AccountUpdateOne) SetCostPerMillionInput(v float64) *AccountUpdateOne {
+	_u.mutation.ResetCostPerMillionInput()
+	_u.mutation.SetCostPerMillionInput(v)
+	return _u
+}
+
+// SetNillableCostPerMillionInput sets the "cost_per_million_input" field if the given value is not nil.
+func (_u *AccountUpdateOne) SetNillableCostPerMillionInput(v *float64) *AccountUpdateOne {
+	if v != nil {
+		_u.SetCostPerMillionInput(*v)
+	}
+	return _u
+}
+
+// AddCostPerMillionInput adds value to the "cost_per_million_input" field.
+func (_u *AccountUpdateOne) AddCostPerMillionInput(v float64) *AccountUpdateOne {
+	_u.mutation.AddCostPerMillionInput(v)
+	return _u
+}
+
+// ClearCostPerMillionInput clears the value of the "cost_per_million_input" field.
+func (_u *AccountUpdateOne) ClearCostPerMillionInput() *AccountUpdateOne {
+	_u.mutation.ClearCostPerMillionInput()
+	return _u
+}
+
+// SetCostPerMillionOutput sets the "cost_per_million_output" field.
+func (_u *AccountUpdateOne) SetCostPerMillionOutput(v float64) *AccountUpdateOne {
+	_u.mutation.ResetCostPerMillionOutput()
+	_u.mutation.SetCostPerMillionOutput(v)
+	return _u
+}
+
+// SetNillableCostPerMillionOutput sets the "cost_per_million_output" field if the given value is not nil.
+func (_u *AccountUpdateOne) SetNillableCostPerMillionOutput(v *float64) *AccountUpdateOne {
+	if v != nil {
+		_u.SetCostPerMillionOutput(*v)
+	}
+	return _u
+}
+
+// AddCostPerMillionOutput adds value to the "cost_per_million_output" field.
+func (_u *AccountUpdateOne) AddCostPerMillionOutput(v float64) *AccountUpdateOne {
+	_u.mutation.AddCostPerMillionOutput(v)
+	return _u
+}
+
+// ClearCostPerMillionOutput clears the value of the "cost_per_million_output" field.
+func (_u *AccountUpdateOne) ClearCostPerMillionOutput() *AccountUpdateOne {
+	_u.mutation.ClearCostPerMillionOutput()
 	return _u
 }
 
@@ -1688,6 +1814,24 @@ func (_u *AccountUpdateOne) sqlSave(ctx context.Context) (_node *Account, err er
 	}
 	if value, ok := _u.mutation.AddedRateMultiplier(); ok {
 		_spec.AddField(account.FieldRateMultiplier, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.CostPerMillionInput(); ok {
+		_spec.SetField(account.FieldCostPerMillionInput, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.AddedCostPerMillionInput(); ok {
+		_spec.AddField(account.FieldCostPerMillionInput, field.TypeFloat64, value)
+	}
+	if _u.mutation.CostPerMillionInputCleared() {
+		_spec.ClearField(account.FieldCostPerMillionInput, field.TypeFloat64)
+	}
+	if value, ok := _u.mutation.CostPerMillionOutput(); ok {
+		_spec.SetField(account.FieldCostPerMillionOutput, field.TypeFloat64, value)
+	}
+	if value, ok := _u.mutation.AddedCostPerMillionOutput(); ok {
+		_spec.AddField(account.FieldCostPerMillionOutput, field.TypeFloat64, value)
+	}
+	if _u.mutation.CostPerMillionOutputCleared() {
+		_spec.ClearField(account.FieldCostPerMillionOutput, field.TypeFloat64)
 	}
 	if value, ok := _u.mutation.Status(); ok {
 		_spec.SetField(account.FieldStatus, field.TypeString, value)

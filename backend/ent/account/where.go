@@ -115,6 +115,16 @@ func RateMultiplier(v float64) predicate.Account {
 	return predicate.Account(sql.FieldEQ(FieldRateMultiplier, v))
 }
 
+// CostPerMillionInput applies equality check predicate on the "cost_per_million_input" field. It's identical to CostPerMillionInputEQ.
+func CostPerMillionInput(v float64) predicate.Account {
+	return predicate.Account(sql.FieldEQ(FieldCostPerMillionInput, v))
+}
+
+// CostPerMillionOutput applies equality check predicate on the "cost_per_million_output" field. It's identical to CostPerMillionOutputEQ.
+func CostPerMillionOutput(v float64) predicate.Account {
+	return predicate.Account(sql.FieldEQ(FieldCostPerMillionOutput, v))
+}
+
 // Status applies equality check predicate on the "status" field. It's identical to StatusEQ.
 func Status(v string) predicate.Account {
 	return predicate.Account(sql.FieldEQ(FieldStatus, v))
@@ -783,6 +793,106 @@ func RateMultiplierLT(v float64) predicate.Account {
 // RateMultiplierLTE applies the LTE predicate on the "rate_multiplier" field.
 func RateMultiplierLTE(v float64) predicate.Account {
 	return predicate.Account(sql.FieldLTE(FieldRateMultiplier, v))
+}
+
+// CostPerMillionInputEQ applies the EQ predicate on the "cost_per_million_input" field.
+func CostPerMillionInputEQ(v float64) predicate.Account {
+	return predicate.Account(sql.FieldEQ(FieldCostPerMillionInput, v))
+}
+
+// CostPerMillionInputNEQ applies the NEQ predicate on the "cost_per_million_input" field.
+func CostPerMillionInputNEQ(v float64) predicate.Account {
+	return predicate.Account(sql.FieldNEQ(FieldCostPerMillionInput, v))
+}
+
+// CostPerMillionInputIn applies the In predicate on the "cost_per_million_input" field.
+func CostPerMillionInputIn(vs ...float64) predicate.Account {
+	return predicate.Account(sql.FieldIn(FieldCostPerMillionInput, vs...))
+}
+
+// CostPerMillionInputNotIn applies the NotIn predicate on the "cost_per_million_input" field.
+func CostPerMillionInputNotIn(vs ...float64) predicate.Account {
+	return predicate.Account(sql.FieldNotIn(FieldCostPerMillionInput, vs...))
+}
+
+// CostPerMillionInputGT applies the GT predicate on the "cost_per_million_input" field.
+func CostPerMillionInputGT(v float64) predicate.Account {
+	return predicate.Account(sql.FieldGT(FieldCostPerMillionInput, v))
+}
+
+// CostPerMillionInputGTE applies the GTE predicate on the "cost_per_million_input" field.
+func CostPerMillionInputGTE(v float64) predicate.Account {
+	return predicate.Account(sql.FieldGTE(FieldCostPerMillionInput, v))
+}
+
+// CostPerMillionInputLT applies the LT predicate on the "cost_per_million_input" field.
+func CostPerMillionInputLT(v float64) predicate.Account {
+	return predicate.Account(sql.FieldLT(FieldCostPerMillionInput, v))
+}
+
+// CostPerMillionInputLTE applies the LTE predicate on the "cost_per_million_input" field.
+func CostPerMillionInputLTE(v float64) predicate.Account {
+	return predicate.Account(sql.FieldLTE(FieldCostPerMillionInput, v))
+}
+
+// CostPerMillionInputIsNil applies the IsNil predicate on the "cost_per_million_input" field.
+func CostPerMillionInputIsNil() predicate.Account {
+	return predicate.Account(sql.FieldIsNull(FieldCostPerMillionInput))
+}
+
+// CostPerMillionInputNotNil applies the NotNil predicate on the "cost_per_million_input" field.
+func CostPerMillionInputNotNil() predicate.Account {
+	return predicate.Account(sql.FieldNotNull(FieldCostPerMillionInput))
+}
+
+// CostPerMillionOutputEQ applies the EQ predicate on the "cost_per_million_output" field.
+func CostPerMillionOutputEQ(v float64) predicate.Account {
+	return predicate.Account(sql.FieldEQ(FieldCostPerMillionOutput, v))
+}
+
+// CostPerMillionOutputNEQ applies the NEQ predicate on the "cost_per_million_output" field.
+func CostPerMillionOutputNEQ(v float64) predicate.Account {
+	return predicate.Account(sql.FieldNEQ(FieldCostPerMillionOutput, v))
+}
+
+// CostPerMillionOutputIn applies the In predicate on the "cost_per_million_output" field.
+func CostPerMillionOutputIn(vs ...float64) predicate.Account {
+	return predicate.Account(sql.FieldIn(FieldCostPerMillionOutput, vs...))
+}
+
+// CostPerMillionOutputNotIn applies the NotIn predicate on the "cost_per_million_output" field.
+func CostPerMillionOutputNotIn(vs ...float64) predicate.Account {
+	return predicate.Account(sql.FieldNotIn(FieldCostPerMillionOutput, vs...))
+}
+
+// CostPerMillionOutputGT applies the GT predicate on the "cost_per_million_output" field.
+func CostPerMillionOutputGT(v float64) predicate.Account {
+	return predicate.Account(sql.FieldGT(FieldCostPerMillionOutput, v))
+}
+
+// CostPerMillionOutputGTE applies the GTE predicate on the "cost_per_million_output" field.
+func CostPerMillionOutputGTE(v float64) predicate.Account {
+	return predicate.Account(sql.FieldGTE(FieldCostPerMillionOutput, v))
+}
+
+// CostPerMillionOutputLT applies the LT predicate on the "cost_per_million_output" field.
+func CostPerMillionOutputLT(v float64) predicate.Account {
+	return predicate.Account(sql.FieldLT(FieldCostPerMillionOutput, v))
+}
+
+// CostPerMillionOutputLTE applies the LTE predicate on the "cost_per_million_output" field.
+func CostPerMillionOutputLTE(v float64) predicate.Account {
+	return predicate.Account(sql.FieldLTE(FieldCostPerMillionOutput, v))
+}
+
+// CostPerMillionOutputIsNil applies the IsNil predicate on the "cost_per_million_output" field.
+func CostPerMillionOutputIsNil() predicate.Account {
+	return predicate.Account(sql.FieldIsNull(FieldCostPerMillionOutput))
+}
+
+// CostPerMillionOutputNotNil applies the NotNil predicate on the "cost_per_million_output" field.
+func CostPerMillionOutputNotNil() predicate.Account {
+	return predicate.Account(sql.FieldNotNull(FieldCostPerMillionOutput))
 }
 
 // StatusEQ applies the EQ predicate on the "status" field.

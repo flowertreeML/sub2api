@@ -2272,52 +2272,56 @@ func (m *APIKeyMutation) ResetEdge(name string) error {
 // AccountMutation represents an operation that mutates the Account nodes in the graph.
 type AccountMutation struct {
 	config
-	op                        Op
-	typ                       string
-	id                        *int64
-	created_at                *time.Time
-	updated_at                *time.Time
-	deleted_at                *time.Time
-	name                      *string
-	notes                     *string
-	platform                  *string
-	_type                     *string
-	credentials               *map[string]interface{}
-	extra                     *map[string]interface{}
-	concurrency               *int
-	addconcurrency            *int
-	load_factor               *int
-	addload_factor            *int
-	priority                  *int
-	addpriority               *int
-	rate_multiplier           *float64
-	addrate_multiplier        *float64
-	status                    *string
-	error_message             *string
-	last_used_at              *time.Time
-	expires_at                *time.Time
-	auto_pause_on_expired     *bool
-	schedulable               *bool
-	rate_limited_at           *time.Time
-	rate_limit_reset_at       *time.Time
-	overload_until            *time.Time
-	temp_unschedulable_until  *time.Time
-	temp_unschedulable_reason *string
-	session_window_start      *time.Time
-	session_window_end        *time.Time
-	session_window_status     *string
-	clearedFields             map[string]struct{}
-	groups                    map[int64]struct{}
-	removedgroups             map[int64]struct{}
-	clearedgroups             bool
-	proxy                     *int64
-	clearedproxy              bool
-	usage_logs                map[int64]struct{}
-	removedusage_logs         map[int64]struct{}
-	clearedusage_logs         bool
-	done                      bool
-	oldValue                  func(context.Context) (*Account, error)
-	predicates                []predicate.Account
+	op                         Op
+	typ                        string
+	id                         *int64
+	created_at                 *time.Time
+	updated_at                 *time.Time
+	deleted_at                 *time.Time
+	name                       *string
+	notes                      *string
+	platform                   *string
+	_type                      *string
+	credentials                *map[string]interface{}
+	extra                      *map[string]interface{}
+	concurrency                *int
+	addconcurrency             *int
+	load_factor                *int
+	addload_factor             *int
+	priority                   *int
+	addpriority                *int
+	rate_multiplier            *float64
+	addrate_multiplier         *float64
+	cost_per_million_input     *float64
+	addcost_per_million_input  *float64
+	cost_per_million_output    *float64
+	addcost_per_million_output *float64
+	status                     *string
+	error_message              *string
+	last_used_at               *time.Time
+	expires_at                 *time.Time
+	auto_pause_on_expired      *bool
+	schedulable                *bool
+	rate_limited_at            *time.Time
+	rate_limit_reset_at        *time.Time
+	overload_until             *time.Time
+	temp_unschedulable_until   *time.Time
+	temp_unschedulable_reason  *string
+	session_window_start       *time.Time
+	session_window_end         *time.Time
+	session_window_status      *string
+	clearedFields              map[string]struct{}
+	groups                     map[int64]struct{}
+	removedgroups              map[int64]struct{}
+	clearedgroups              bool
+	proxy                      *int64
+	clearedproxy               bool
+	usage_logs                 map[int64]struct{}
+	removedusage_logs          map[int64]struct{}
+	clearedusage_logs          bool
+	done                       bool
+	oldValue                   func(context.Context) (*Account, error)
+	predicates                 []predicate.Account
 }
 
 var _ ent.Mutation = (*AccountMutation)(nil)
@@ -3053,6 +3057,146 @@ func (m *AccountMutation) AddedRateMultiplier() (r float64, exists bool) {
 func (m *AccountMutation) ResetRateMultiplier() {
 	m.rate_multiplier = nil
 	m.addrate_multiplier = nil
+}
+
+// SetCostPerMillionInput sets the "cost_per_million_input" field.
+func (m *AccountMutation) SetCostPerMillionInput(f float64) {
+	m.cost_per_million_input = &f
+	m.addcost_per_million_input = nil
+}
+
+// CostPerMillionInput returns the value of the "cost_per_million_input" field in the mutation.
+func (m *AccountMutation) CostPerMillionInput() (r float64, exists bool) {
+	v := m.cost_per_million_input
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCostPerMillionInput returns the old "cost_per_million_input" field's value of the Account entity.
+// If the Account object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AccountMutation) OldCostPerMillionInput(ctx context.Context) (v *float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCostPerMillionInput is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCostPerMillionInput requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCostPerMillionInput: %w", err)
+	}
+	return oldValue.CostPerMillionInput, nil
+}
+
+// AddCostPerMillionInput adds f to the "cost_per_million_input" field.
+func (m *AccountMutation) AddCostPerMillionInput(f float64) {
+	if m.addcost_per_million_input != nil {
+		*m.addcost_per_million_input += f
+	} else {
+		m.addcost_per_million_input = &f
+	}
+}
+
+// AddedCostPerMillionInput returns the value that was added to the "cost_per_million_input" field in this mutation.
+func (m *AccountMutation) AddedCostPerMillionInput() (r float64, exists bool) {
+	v := m.addcost_per_million_input
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearCostPerMillionInput clears the value of the "cost_per_million_input" field.
+func (m *AccountMutation) ClearCostPerMillionInput() {
+	m.cost_per_million_input = nil
+	m.addcost_per_million_input = nil
+	m.clearedFields[account.FieldCostPerMillionInput] = struct{}{}
+}
+
+// CostPerMillionInputCleared returns if the "cost_per_million_input" field was cleared in this mutation.
+func (m *AccountMutation) CostPerMillionInputCleared() bool {
+	_, ok := m.clearedFields[account.FieldCostPerMillionInput]
+	return ok
+}
+
+// ResetCostPerMillionInput resets all changes to the "cost_per_million_input" field.
+func (m *AccountMutation) ResetCostPerMillionInput() {
+	m.cost_per_million_input = nil
+	m.addcost_per_million_input = nil
+	delete(m.clearedFields, account.FieldCostPerMillionInput)
+}
+
+// SetCostPerMillionOutput sets the "cost_per_million_output" field.
+func (m *AccountMutation) SetCostPerMillionOutput(f float64) {
+	m.cost_per_million_output = &f
+	m.addcost_per_million_output = nil
+}
+
+// CostPerMillionOutput returns the value of the "cost_per_million_output" field in the mutation.
+func (m *AccountMutation) CostPerMillionOutput() (r float64, exists bool) {
+	v := m.cost_per_million_output
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// OldCostPerMillionOutput returns the old "cost_per_million_output" field's value of the Account entity.
+// If the Account object wasn't provided to the builder, the object is fetched from the database.
+// An error is returned if the mutation operation is not UpdateOne, or the database query fails.
+func (m *AccountMutation) OldCostPerMillionOutput(ctx context.Context) (v *float64, err error) {
+	if !m.op.Is(OpUpdateOne) {
+		return v, errors.New("OldCostPerMillionOutput is only allowed on UpdateOne operations")
+	}
+	if m.id == nil || m.oldValue == nil {
+		return v, errors.New("OldCostPerMillionOutput requires an ID field in the mutation")
+	}
+	oldValue, err := m.oldValue(ctx)
+	if err != nil {
+		return v, fmt.Errorf("querying old value for OldCostPerMillionOutput: %w", err)
+	}
+	return oldValue.CostPerMillionOutput, nil
+}
+
+// AddCostPerMillionOutput adds f to the "cost_per_million_output" field.
+func (m *AccountMutation) AddCostPerMillionOutput(f float64) {
+	if m.addcost_per_million_output != nil {
+		*m.addcost_per_million_output += f
+	} else {
+		m.addcost_per_million_output = &f
+	}
+}
+
+// AddedCostPerMillionOutput returns the value that was added to the "cost_per_million_output" field in this mutation.
+func (m *AccountMutation) AddedCostPerMillionOutput() (r float64, exists bool) {
+	v := m.addcost_per_million_output
+	if v == nil {
+		return
+	}
+	return *v, true
+}
+
+// ClearCostPerMillionOutput clears the value of the "cost_per_million_output" field.
+func (m *AccountMutation) ClearCostPerMillionOutput() {
+	m.cost_per_million_output = nil
+	m.addcost_per_million_output = nil
+	m.clearedFields[account.FieldCostPerMillionOutput] = struct{}{}
+}
+
+// CostPerMillionOutputCleared returns if the "cost_per_million_output" field was cleared in this mutation.
+func (m *AccountMutation) CostPerMillionOutputCleared() bool {
+	_, ok := m.clearedFields[account.FieldCostPerMillionOutput]
+	return ok
+}
+
+// ResetCostPerMillionOutput resets all changes to the "cost_per_million_output" field.
+func (m *AccountMutation) ResetCostPerMillionOutput() {
+	m.cost_per_million_output = nil
+	m.addcost_per_million_output = nil
+	delete(m.clearedFields, account.FieldCostPerMillionOutput)
 }
 
 // SetStatus sets the "status" field.
@@ -3871,7 +4015,7 @@ func (m *AccountMutation) Type() string {
 // order to get all numeric fields that were incremented/decremented, call
 // AddedFields().
 func (m *AccountMutation) Fields() []string {
-	fields := make([]string, 0, 28)
+	fields := make([]string, 0, 30)
 	if m.created_at != nil {
 		fields = append(fields, account.FieldCreatedAt)
 	}
@@ -3913,6 +4057,12 @@ func (m *AccountMutation) Fields() []string {
 	}
 	if m.rate_multiplier != nil {
 		fields = append(fields, account.FieldRateMultiplier)
+	}
+	if m.cost_per_million_input != nil {
+		fields = append(fields, account.FieldCostPerMillionInput)
+	}
+	if m.cost_per_million_output != nil {
+		fields = append(fields, account.FieldCostPerMillionOutput)
 	}
 	if m.status != nil {
 		fields = append(fields, account.FieldStatus)
@@ -3992,6 +4142,10 @@ func (m *AccountMutation) Field(name string) (ent.Value, bool) {
 		return m.Priority()
 	case account.FieldRateMultiplier:
 		return m.RateMultiplier()
+	case account.FieldCostPerMillionInput:
+		return m.CostPerMillionInput()
+	case account.FieldCostPerMillionOutput:
+		return m.CostPerMillionOutput()
 	case account.FieldStatus:
 		return m.Status()
 	case account.FieldErrorMessage:
@@ -4057,6 +4211,10 @@ func (m *AccountMutation) OldField(ctx context.Context, name string) (ent.Value,
 		return m.OldPriority(ctx)
 	case account.FieldRateMultiplier:
 		return m.OldRateMultiplier(ctx)
+	case account.FieldCostPerMillionInput:
+		return m.OldCostPerMillionInput(ctx)
+	case account.FieldCostPerMillionOutput:
+		return m.OldCostPerMillionOutput(ctx)
 	case account.FieldStatus:
 		return m.OldStatus(ctx)
 	case account.FieldErrorMessage:
@@ -4192,6 +4350,20 @@ func (m *AccountMutation) SetField(name string, value ent.Value) error {
 		}
 		m.SetRateMultiplier(v)
 		return nil
+	case account.FieldCostPerMillionInput:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCostPerMillionInput(v)
+		return nil
+	case account.FieldCostPerMillionOutput:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.SetCostPerMillionOutput(v)
+		return nil
 	case account.FieldStatus:
 		v, ok := value.(string)
 		if !ok {
@@ -4310,6 +4482,12 @@ func (m *AccountMutation) AddedFields() []string {
 	if m.addrate_multiplier != nil {
 		fields = append(fields, account.FieldRateMultiplier)
 	}
+	if m.addcost_per_million_input != nil {
+		fields = append(fields, account.FieldCostPerMillionInput)
+	}
+	if m.addcost_per_million_output != nil {
+		fields = append(fields, account.FieldCostPerMillionOutput)
+	}
 	return fields
 }
 
@@ -4326,6 +4504,10 @@ func (m *AccountMutation) AddedField(name string) (ent.Value, bool) {
 		return m.AddedPriority()
 	case account.FieldRateMultiplier:
 		return m.AddedRateMultiplier()
+	case account.FieldCostPerMillionInput:
+		return m.AddedCostPerMillionInput()
+	case account.FieldCostPerMillionOutput:
+		return m.AddedCostPerMillionOutput()
 	}
 	return nil, false
 }
@@ -4363,6 +4545,20 @@ func (m *AccountMutation) AddField(name string, value ent.Value) error {
 		}
 		m.AddRateMultiplier(v)
 		return nil
+	case account.FieldCostPerMillionInput:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddCostPerMillionInput(v)
+		return nil
+	case account.FieldCostPerMillionOutput:
+		v, ok := value.(float64)
+		if !ok {
+			return fmt.Errorf("unexpected type %T for field %s", value, name)
+		}
+		m.AddCostPerMillionOutput(v)
+		return nil
 	}
 	return fmt.Errorf("unknown Account numeric field %s", name)
 }
@@ -4382,6 +4578,12 @@ func (m *AccountMutation) ClearedFields() []string {
 	}
 	if m.FieldCleared(account.FieldLoadFactor) {
 		fields = append(fields, account.FieldLoadFactor)
+	}
+	if m.FieldCleared(account.FieldCostPerMillionInput) {
+		fields = append(fields, account.FieldCostPerMillionInput)
+	}
+	if m.FieldCleared(account.FieldCostPerMillionOutput) {
+		fields = append(fields, account.FieldCostPerMillionOutput)
 	}
 	if m.FieldCleared(account.FieldErrorMessage) {
 		fields = append(fields, account.FieldErrorMessage)
@@ -4441,6 +4643,12 @@ func (m *AccountMutation) ClearField(name string) error {
 		return nil
 	case account.FieldLoadFactor:
 		m.ClearLoadFactor()
+		return nil
+	case account.FieldCostPerMillionInput:
+		m.ClearCostPerMillionInput()
+		return nil
+	case account.FieldCostPerMillionOutput:
+		m.ClearCostPerMillionOutput()
 		return nil
 	case account.FieldErrorMessage:
 		m.ClearErrorMessage()
@@ -4524,6 +4732,12 @@ func (m *AccountMutation) ResetField(name string) error {
 		return nil
 	case account.FieldRateMultiplier:
 		m.ResetRateMultiplier()
+		return nil
+	case account.FieldCostPerMillionInput:
+		m.ResetCostPerMillionInput()
+		return nil
+	case account.FieldCostPerMillionOutput:
+		m.ResetCostPerMillionOutput()
 		return nil
 	case account.FieldStatus:
 		m.ResetStatus()
