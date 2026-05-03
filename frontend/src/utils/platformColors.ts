@@ -160,6 +160,7 @@ export function platformLabel(p: string): string {
     case 'openai': return 'OpenAI'
     case 'antigravity': return 'Antigravity'
     case 'gemini': return 'Gemini'
+    case 'zhipu': return '智谱 GLM'
     default: return p || 'API'
   }
 }
