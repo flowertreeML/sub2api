@@ -70,6 +70,7 @@ func NormalizeInboundEndpoint(path string) string {
 //   - Antigravity → /v1/messages (Claude) or gemini (Gemini)
 //   - Antigravity routes may target either Claude or Gemini, so the
 //     inbound endpoint is used to distinguish.
+//   - Zhipu      → /v1/chat/completions
 func DeriveUpstreamEndpoint(inbound, rawRequestPath, platform string) string {
 	inbound = strings.TrimSpace(inbound)
 
@@ -97,6 +98,10 @@ func DeriveUpstreamEndpoint(inbound, rawRequestPath, platform string) string {
 			return EndpointGeminiModels
 		}
 		return EndpointMessages
+
+	case service.PlatformZhipu:
+		// 智谱 GLM 仅暴露 OpenAI Chat Completions 兼容接口，不支持 Responses API。
+		return EndpointChatCompletions
 	}
 
 	// Unknown platform — fall back to inbound.
