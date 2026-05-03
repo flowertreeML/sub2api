@@ -419,6 +419,9 @@ func (s *AccountService) TestCredentials(ctx context.Context, id int64) error {
 	case PlatformGemini:
 		// TODO: 测试Gemini API凭证
 		return nil
+	case PlatformZhipu:
+		// TODO(W2+): 实测发一次 chat completions ping 到 GLM；W1 暂时跳过避免阻塞配置流程
+		return nil
 	default:
 		return fmt.Errorf("unsupported platform: %s", account.Platform)
 	}
