@@ -50,6 +50,12 @@ func (s *OpenAIGatewayService) ForwardAsChatCompletions(
 	promptCacheKey string,
 	defaultMappedModel string,
 ) (*OpenAIForwardResult, error) {
+	if account != nil && account.Platform == PlatformZhipu {
+		// 智谱 GLM 不支持 Responses API；zhipu 请求必须走 GatewayService.ZhipuChatCompletions。
+		writeChatCompletionsError(c, http.StatusBadGateway, "api_error", "zhipu requests must use zhipu chat completions gateway")
+		return nil, fmt.Errorf("zhipu account cannot use openai chat completions responses conversion")
+	}
+
 	startTime := time.Now()
 
 	// 1. Parse Chat Completions request
