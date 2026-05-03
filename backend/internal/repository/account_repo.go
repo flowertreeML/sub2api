@@ -1733,8 +1733,6 @@ func accountEntityToService(m *dbent.Account) *service.Account {
 		Concurrency:             m.Concurrency,
 		Priority:                m.Priority,
 		RateMultiplier:          &rateMultiplier,
-		CostPerMillionInput:     m.CostPerMillionInput,
-		CostPerMillionOutput:    m.CostPerMillionOutput,
 		LoadFactor:              m.LoadFactor,
 		Status:                  m.Status,
 		ErrorMessage:            derefString(m.ErrorMessage),

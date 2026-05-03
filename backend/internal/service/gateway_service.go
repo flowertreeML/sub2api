@@ -29,7 +29,6 @@ import (
 	"github.com/Wei-Shaw/sub2api/internal/pkg/ctxkey"
 	"github.com/Wei-Shaw/sub2api/internal/pkg/logger"
 	"github.com/Wei-Shaw/sub2api/internal/pkg/usagestats"
-	"github.com/Wei-Shaw/sub2api/internal/provider/zhipu"
 	"github.com/Wei-Shaw/sub2api/internal/util/responseheaders"
 	"github.com/Wei-Shaw/sub2api/internal/util/urlvalidator"
 	"github.com/cespare/xxhash/v2"
@@ -8378,7 +8377,7 @@ func (s *GatewayService) recordUsageCore(ctx context.Context, input *recordUsage
 	}
 
 	// 计算费用
-	cost := s.calculateRecordUsageCost(ctx, result, apiKey, account, billingModel, multiplier, opts)
+	cost := s.calculateRecordUsageCost(ctx, result, apiKey, billingModel, multiplier, opts)
 
 	// 判断计费方式：订阅模式 vs 余额模式
 	isSubscriptionBilling := subscription != nil && apiKey.Group != nil && apiKey.Group.IsSubscriptionType()
@@ -8442,7 +8441,6 @@ func (s *GatewayService) calculateRecordUsageCost(
 	ctx context.Context,
 	result *ForwardResult,
 	apiKey *APIKey,
-	account *Account,
 	billingModel string,
 	multiplier float64,
 	opts *recordUsageOpts,
@@ -8453,7 +8451,7 @@ func (s *GatewayService) calculateRecordUsageCost(
 	}
 
 	// Token 计费
-	return s.calculateTokenCost(ctx, result, apiKey, account, billingModel, multiplier, opts)
+	return s.calculateTokenCost(ctx, result, apiKey, billingModel, multiplier, opts)
 }
 
 // resolveChannelPricing 检查指定模型是否存在渠道级别定价。
@@ -8518,7 +8516,6 @@ func (s *GatewayService) calculateTokenCost(
 	ctx context.Context,
 	result *ForwardResult,
 	apiKey *APIKey,
-	account *Account,
 	billingModel string,
 	multiplier float64,
 	opts *recordUsageOpts,
@@ -8549,12 +8546,6 @@ func (s *GatewayService) calculateTokenCost(
 			Resolver:       s.resolver,
 			Resolved:       resolved,
 		})
-	} else if pricing := accountModelPricing(account); pricing != nil {
-		// 账号级成本优先于平台默认价，用于管理员显式录入供应商成本。
-		cost = s.billingService.computeTokenBreakdown(pricing, tokens, multiplier, "", true)
-	} else if pricing := zhipuDefaultModelPricing(account, billingModel); pricing != nil {
-		// 智谱平台模型默认成本仅作为 model_file 前的兜底。
-		cost = s.billingService.computeTokenBreakdown(pricing, tokens, multiplier, "", true)
 	} else if opts.LongContextThreshold > 0 {
 		// 长上下文双倍计费（如 Gemini 200K 阈值）
 		cost, err = s.billingService.CalculateCostWithLongContext(
@@ -8569,35 +8560,6 @@ func (s *GatewayService) calculateTokenCost(
 		return &CostBreakdown{ActualCost: 0}
 	}
 	return cost
-}
-
-func accountModelPricing(account *Account) *ModelPricing {
-	if account == nil || account.CostPerMillionInput == nil || *account.CostPerMillionInput <= 0 {
-		return nil
-	}
-	pricing := &ModelPricing{
-		InputPricePerToken: *account.CostPerMillionInput / 1_000_000,
-	}
-	if account.CostPerMillionOutput != nil {
-		pricing.OutputPricePerToken = *account.CostPerMillionOutput / 1_000_000
-	}
-	return pricing
-}
-
-func zhipuDefaultModelPricing(account *Account, model string) *ModelPricing {
-	if account == nil || account.Platform != PlatformZhipu {
-		return nil
-	}
-	spec, ok := zhipu.LookupModel(strings.ToLower(strings.TrimSpace(model)))
-	if !ok {
-		return nil
-	}
-	inputPrice, _ := spec.InputPricePer1M.Float64()
-	outputPrice, _ := spec.OutputPricePer1M.Float64()
-	return &ModelPricing{
-		InputPricePerToken:  inputPrice / 1_000_000,
-		OutputPricePerToken: outputPrice / 1_000_000,
-	}
 }
 
 // buildRecordUsageLog 构建使用日志并设置计费模式。

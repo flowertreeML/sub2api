@@ -35,12 +35,6 @@ func (s *GatewayService) ForwardAsResponses(
 	body []byte,
 	parsed *ParsedRequest,
 ) (*ForwardResult, error) {
-	if account != nil && account.Platform == PlatformZhipu {
-		// 智谱 GLM 不支持 Responses API；路由层应拒绝该入口。
-		writeResponsesError(c, http.StatusNotFound, "not_found_error", "Responses API is not supported for zhipu; use /v1/chat/completions")
-		return nil, fmt.Errorf("zhipu account cannot use gateway responses conversion")
-	}
-
 	startTime := time.Now()
 
 	// 1. Parse Responses request

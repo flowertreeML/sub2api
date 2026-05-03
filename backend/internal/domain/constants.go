@@ -22,7 +22,6 @@ const (
 	PlatformOpenAI      = "openai"
 	PlatformGemini      = "gemini"
 	PlatformAntigravity = "antigravity"
-	PlatformZhipu       = "zhipu" // 智谱 GLM 国内（open.bigmodel.cn）
 )
 
 // Account type constants

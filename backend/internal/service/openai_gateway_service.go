@@ -1974,11 +1974,6 @@ func (s *OpenAIGatewayService) handleFailoverSideEffects(ctx context.Context, re
 
 // Forward forwards request to OpenAI API
 func (s *OpenAIGatewayService) Forward(ctx context.Context, c *gin.Context, account *Account, body []byte) (*OpenAIForwardResult, error) {
-	if account != nil && account.Platform == PlatformZhipu {
-		// 智谱 GLM 不支持 OpenAI Responses API，上层路由应已分流到 zhipu_gateway_service。
-		return nil, fmt.Errorf("zhipu account cannot use openai gateway forward path")
-	}
-
 	startTime := time.Now()
 
 	restrictionResult := s.detectCodexClientRestriction(c, account)

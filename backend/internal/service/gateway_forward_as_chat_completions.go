@@ -33,12 +33,6 @@ func (s *GatewayService) ForwardAsChatCompletions(
 	body []byte,
 	parsed *ParsedRequest,
 ) (*ForwardResult, error) {
-	if account != nil && account.Platform == PlatformZhipu {
-		// 智谱 GLM 不支持 Responses/Anthropic 转换链，必须由 ZhipuChatCompletions 直转。
-		writeGatewayCCError(c, http.StatusBadGateway, "api_error", "zhipu requests must use zhipu chat completions gateway")
-		return nil, fmt.Errorf("zhipu account cannot use gateway chat completions conversion")
-	}
-
 	startTime := time.Now()
 
 	// 1. Parse Chat Completions request

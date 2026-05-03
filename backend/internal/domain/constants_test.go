@@ -24,22 +24,3 @@ func TestDefaultAntigravityModelMapping_ImageCompatibilityAliases(t *testing.T) 
 		}
 	}
 }
-
-func TestPlatformZhipu_Constant(t *testing.T) {
-	t.Parallel()
-
-	if PlatformZhipu != "zhipu" {
-		t.Errorf("PlatformZhipu = %q; want \"zhipu\"", PlatformZhipu)
-	}
-}
-
-func TestPlatformZhipu_DistinctFromOthers(t *testing.T) {
-	t.Parallel()
-
-	others := []string{PlatformAnthropic, PlatformOpenAI, PlatformGemini, PlatformAntigravity}
-	for _, p := range others {
-		if p == PlatformZhipu {
-			t.Errorf("PlatformZhipu collides with existing %q", p)
-		}
-	}
-}
