@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"errors"
 	"fmt"
 
 	"log"
@@ -64,6 +65,8 @@ const (
 	openAIGPT54LongContextInputMultiplier  = 2.0
 	openAIGPT54LongContextOutputMultiplier = 1.5
 )
+
+var ErrPricingNotFound = errors.New("pricing not found")
 
 func normalizeBillingServiceTier(serviceTier string) string {
 	return strings.ToLower(strings.TrimSpace(serviceTier))
@@ -348,7 +351,7 @@ func (s *BillingService) GetModelPricing(model string) (*ModelPricing, error) {
 		return s.applyModelSpecificPricingPolicy(model, fallback), nil
 	}
 
-	return nil, fmt.Errorf("pricing not found for model: %s", model)
+	return nil, fmt.Errorf("%w for model: %s", ErrPricingNotFound, model)
 }
 
 // GetModelPricingWithChannel 获取模型定价，渠道配置的价格覆盖默认值
@@ -579,6 +582,40 @@ func (s *BillingService) calculatePerRequestCost(resolved *ResolvedPricing, inpu
 // CalculateCost 计算使用费用
 func (s *BillingService) CalculateCost(model string, tokens UsageTokens, rateMultiplier float64) (*CostBreakdown, error) {
 	return s.calculateCostInternal(model, tokens, rateMultiplier, "", nil)
+}
+
+// CalculateCostFromAccountFallback 在 model pricing 表 miss 时，
+// 根据 account.CostPerMillionInput/Output 兜底计算 token cost。
+func (s *BillingService) CalculateCostFromAccountFallback(
+	account *Account,
+	tokens UsageTokens,
+	rateMultiplier float64,
+) *CostBreakdown {
+	if account == nil ||
+		account.CostPerMillionInput == nil ||
+		account.CostPerMillionOutput == nil {
+		return &CostBreakdown{ActualCost: 0}
+	}
+	if rateMultiplier < 0 {
+		rateMultiplier = 0
+	}
+
+	inPerTok := *account.CostPerMillionInput / 1_000_000.0
+	outPerTok := *account.CostPerMillionOutput / 1_000_000.0
+
+	inCost := float64(tokens.InputTokens) * inPerTok * rateMultiplier
+	outCost := float64(tokens.OutputTokens) * outPerTok * rateMultiplier
+	cacheReadCost := float64(tokens.CacheReadTokens) * inPerTok * rateMultiplier
+	total := inCost + outCost + cacheReadCost
+
+	return &CostBreakdown{
+		InputCost:     inCost,
+		OutputCost:    outCost,
+		CacheReadCost: cacheReadCost,
+		TotalCost:     total,
+		ActualCost:    total,
+		BillingMode:   string(BillingModeToken),
+	}
 }
 
 func (s *BillingService) CalculateCostWithServiceTier(model string, tokens UsageTokens, rateMultiplier float64, serviceTier string) (*CostBreakdown, error) {

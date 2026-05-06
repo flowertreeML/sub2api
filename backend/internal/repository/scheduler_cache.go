@@ -436,6 +436,8 @@ func buildSchedulerMetadataAccount(account service.Account) service.Account {
 		LoadFactor:              account.LoadFactor,
 		Priority:                account.Priority,
 		RateMultiplier:          account.RateMultiplier,
+		CostPerMillionInput:     account.CostPerMillionInput,
+		CostPerMillionOutput:    account.CostPerMillionOutput,
 		Status:                  account.Status,
 		LastUsedAt:              account.LastUsedAt,
 		ExpiresAt:               account.ExpiresAt,
