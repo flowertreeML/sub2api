@@ -8377,7 +8377,7 @@ func (s *GatewayService) recordUsageCore(ctx context.Context, input *recordUsage
 	}
 
 	// 计算费用
-	cost := s.calculateRecordUsageCost(ctx, result, apiKey, billingModel, multiplier, opts)
+	cost := s.calculateRecordUsageCost(ctx, result, apiKey, account, billingModel, multiplier, opts)
 
 	// 判断计费方式：订阅模式 vs 余额模式
 	isSubscriptionBilling := subscription != nil && apiKey.Group != nil && apiKey.Group.IsSubscriptionType()
@@ -8441,6 +8441,7 @@ func (s *GatewayService) calculateRecordUsageCost(
 	ctx context.Context,
 	result *ForwardResult,
 	apiKey *APIKey,
+	account *Account,
 	billingModel string,
 	multiplier float64,
 	opts *recordUsageOpts,
@@ -8451,7 +8452,7 @@ func (s *GatewayService) calculateRecordUsageCost(
 	}
 
 	// Token 计费
-	return s.calculateTokenCost(ctx, result, apiKey, billingModel, multiplier, opts)
+	return s.calculateTokenCost(ctx, result, apiKey, account, billingModel, multiplier, opts)
 }
 
 // resolveChannelPricing 检查指定模型是否存在渠道级别定价。
@@ -8516,6 +8517,7 @@ func (s *GatewayService) calculateTokenCost(
 	ctx context.Context,
 	result *ForwardResult,
 	apiKey *APIKey,
+	account *Account,
 	billingModel string,
 	multiplier float64,
 	opts *recordUsageOpts,
@@ -8555,11 +8557,47 @@ func (s *GatewayService) calculateTokenCost(
 	} else {
 		cost, err = s.billingService.CalculateCost(billingModel, tokens, multiplier)
 	}
+
+	cost, err = s.applyAccountCostFallbackIfPricingNotFound(err, account, tokens, multiplier, billingModel, cost)
+
 	if err != nil {
 		logger.LegacyPrintf("service.gateway", "Calculate cost failed: %v", err)
 		return &CostBreakdown{ActualCost: 0}
 	}
 	return cost
+}
+
+func (s *GatewayService) applyAccountCostFallbackIfPricingNotFound(
+	err error,
+	account *Account,
+	tokens UsageTokens,
+	multiplier float64,
+	billingModel string,
+	cost *CostBreakdown,
+) (*CostBreakdown, error) {
+	if err == nil || !errors.Is(err, ErrPricingNotFound) {
+		return cost, err
+	}
+	if account != nil &&
+		account.CostPerMillionInput != nil &&
+		account.CostPerMillionOutput != nil {
+		logger.LegacyPrintf("service.gateway",
+			"[Billing] account-level fallback hit: model=%s account=%d in=%.4f/M out=%.4f/M",
+			billingModel, account.ID,
+			*account.CostPerMillionInput, *account.CostPerMillionOutput)
+		return s.billingService.CalculateCostFromAccountFallback(account, tokens, multiplier), nil
+	}
+	logger.LegacyPrintf("service.gateway",
+		"[Billing] account-level fallback skipped: model=%s account=%v reason=missing_cost_per_million",
+		billingModel, accountID(account))
+	return cost, err
+}
+
+func accountID(account *Account) int64 {
+	if account == nil {
+		return 0
+	}
+	return account.ID
 }
 
 // buildRecordUsageLog 构建使用日志并设置计费模式。
