@@ -194,6 +194,10 @@ var (
 	DefaultPriority int
 	// DefaultRateMultiplier holds the default value on creation for the "rate_multiplier" field.
 	DefaultRateMultiplier float64
+	// CostPerMillionInputValidator is a validator for the "cost_per_million_input" field. It is called by the builders before save.
+	CostPerMillionInputValidator func(float64) error
+	// CostPerMillionOutputValidator is a validator for the "cost_per_million_output" field. It is called by the builders before save.
+	CostPerMillionOutputValidator func(float64) error
 	// DefaultStatus holds the default value on creation for the "status" field.
 	DefaultStatus string
 	// StatusValidator is a validator for the "status" field. It is called by the builders before save.

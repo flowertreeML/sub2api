@@ -579,6 +579,16 @@ func (_c *AccountCreate) check() error {
 	if _, ok := _c.mutation.RateMultiplier(); !ok {
 		return &ValidationError{Name: "rate_multiplier", err: errors.New(`ent: missing required field "Account.rate_multiplier"`)}
 	}
+	if v, ok := _c.mutation.CostPerMillionInput(); ok {
+		if err := account.CostPerMillionInputValidator(v); err != nil {
+			return &ValidationError{Name: "cost_per_million_input", err: fmt.Errorf(`ent: validator failed for field "Account.cost_per_million_input": %w`, err)}
+		}
+	}
+	if v, ok := _c.mutation.CostPerMillionOutput(); ok {
+		if err := account.CostPerMillionOutputValidator(v); err != nil {
+			return &ValidationError{Name: "cost_per_million_output", err: fmt.Errorf(`ent: validator failed for field "Account.cost_per_million_output": %w`, err)}
+		}
+	}
 	if _, ok := _c.mutation.Status(); !ok {
 		return &ValidationError{Name: "status", err: errors.New(`ent: missing required field "Account.status"`)}
 	}

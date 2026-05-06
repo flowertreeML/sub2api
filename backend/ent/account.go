@@ -47,9 +47,9 @@ type Account struct {
 	Priority int `json:"priority,omitempty"`
 	// RateMultiplier holds the value of the "rate_multiplier" field.
 	RateMultiplier float64 `json:"rate_multiplier,omitempty"`
-	// CostPerMillionInput holds the value of the "cost_per_million_input" field.
+	// USD per 1M input tokens; used as account-level fallback when model pricing table misses
 	CostPerMillionInput *float64 `json:"cost_per_million_input,omitempty"`
-	// CostPerMillionOutput holds the value of the "cost_per_million_output" field.
+	// USD per 1M output tokens; used as account-level fallback when model pricing table misses
 	CostPerMillionOutput *float64 `json:"cost_per_million_output,omitempty"`
 	// Status holds the value of the "status" field.
 	Status string `json:"status,omitempty"`

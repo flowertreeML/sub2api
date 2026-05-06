@@ -704,6 +704,16 @@ func (_u *AccountUpdate) check() error {
 			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Account.type": %w`, err)}
 		}
 	}
+	if v, ok := _u.mutation.CostPerMillionInput(); ok {
+		if err := account.CostPerMillionInputValidator(v); err != nil {
+			return &ValidationError{Name: "cost_per_million_input", err: fmt.Errorf(`ent: validator failed for field "Account.cost_per_million_input": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.CostPerMillionOutput(); ok {
+		if err := account.CostPerMillionOutputValidator(v); err != nil {
+			return &ValidationError{Name: "cost_per_million_output", err: fmt.Errorf(`ent: validator failed for field "Account.cost_per_million_output": %w`, err)}
+		}
+	}
 	if v, ok := _u.mutation.Status(); ok {
 		if err := account.StatusValidator(v); err != nil {
 			return &ValidationError{Name: "status", err: fmt.Errorf(`ent: validator failed for field "Account.status": %w`, err)}
@@ -1714,6 +1724,16 @@ func (_u *AccountUpdateOne) check() error {
 	if v, ok := _u.mutation.GetType(); ok {
 		if err := account.TypeValidator(v); err != nil {
 			return &ValidationError{Name: "type", err: fmt.Errorf(`ent: validator failed for field "Account.type": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.CostPerMillionInput(); ok {
+		if err := account.CostPerMillionInputValidator(v); err != nil {
+			return &ValidationError{Name: "cost_per_million_input", err: fmt.Errorf(`ent: validator failed for field "Account.cost_per_million_input": %w`, err)}
+		}
+	}
+	if v, ok := _u.mutation.CostPerMillionOutput(); ok {
+		if err := account.CostPerMillionOutputValidator(v); err != nil {
+			return &ValidationError{Name: "cost_per_million_output", err: fmt.Errorf(`ent: validator failed for field "Account.cost_per_million_output": %w`, err)}
 		}
 	}
 	if v, ok := _u.mutation.Status(); ok {

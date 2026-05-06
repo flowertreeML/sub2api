@@ -112,10 +112,14 @@ func (Account) Fields() []ent.Field {
 		field.Float("cost_per_million_input").
 			Optional().
 			Nillable().
+			Min(0).
+			Comment("USD per 1M input tokens; used as account-level fallback when model pricing table misses").
 			SchemaType(map[string]string{dialect.Postgres: "decimal(10,4)"}),
 		field.Float("cost_per_million_output").
 			Optional().
 			Nillable().
+			Min(0).
+			Comment("USD per 1M output tokens; used as account-level fallback when model pricing table misses").
 			SchemaType(map[string]string{dialect.Postgres: "decimal(10,4)"}),
 
 		// status: 账户状态，如 "active", "error", "disabled"
