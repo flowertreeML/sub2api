@@ -82,6 +82,12 @@ const (
 	SubscriptionStatusSuspended = domain.SubscriptionStatusSuspended
 )
 
+// UpstreamFormat constants
+const (
+	UpstreamFormatResponses      = domain.UpstreamFormatResponses
+	UpstreamFormatChatCompletions = domain.UpstreamFormatChatCompletions
+)
+
 // LinuxDoConnectSyntheticEmailDomain 是 LinuxDo Connect 用户的合成邮箱后缀（RFC 保留域名）。
 const LinuxDoConnectSyntheticEmailDomain = "@linuxdo-connect.invalid"
 

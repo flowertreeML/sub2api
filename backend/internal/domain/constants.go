@@ -60,6 +60,12 @@ const (
 	SubscriptionTypeSubscription = "subscription" // 订阅模式（按限额控制）
 )
 
+// UpstreamFormat constants control which OpenAI API format an account uses.
+const (
+	UpstreamFormatResponses      = "responses"       // OpenAI Responses API (/v1/responses)
+	UpstreamFormatChatCompletions = "chat_completions" // OpenAI Chat Completions API (/v1/chat/completions)
+)
+
 // Subscription status constants
 const (
 	SubscriptionStatusActive    = "active"

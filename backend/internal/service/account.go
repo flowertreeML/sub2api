@@ -767,13 +767,19 @@ func (a *Account) GetClaudeUserID() string {
 	if v := strings.TrimSpace(a.GetExtraString("anthropic_user_id")); v != "" {
 		return v
 	}
-	if v := strings.TrimSpace(a.GetCredential("claude_user_id")); v != "" {
-		return v
-	}
-	if v := strings.TrimSpace(a.GetCredential("anthropic_user_id")); v != "" {
+	if v := strings.TrimSpace(a.GetExtraString("user_id")); v != "" {
 		return v
 	}
 	return ""
+}
+
+// GetUpstreamFormat returns the upstream API format preference for this account.
+// Defaults to UpstreamFormatResponses if not set.
+func (a *Account) GetUpstreamFormat() string {
+	if v := strings.TrimSpace(a.GetExtraString("upstream_format")); v != "" {
+		return v
+	}
+	return domain.UpstreamFormatResponses
 }
 
 // matchAntigravityWildcard 通配符匹配（仅支持末尾 *）

@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/Wei-Shaw/sub2api/internal/config"
+	"github.com/Wei-Shaw/sub2api/internal/domain"
 	pkghttputil "github.com/Wei-Shaw/sub2api/internal/pkg/httputil"
 	"github.com/Wei-Shaw/sub2api/internal/pkg/ip"
 	"github.com/Wei-Shaw/sub2api/internal/pkg/logger"
@@ -695,7 +696,22 @@ func (h *OpenAIGatewayHandler) Messages(c *gin.Context) {
 		if channelMappingMsg.Mapped {
 			forwardBody = h.gatewayService.ReplaceModelInBody(body, channelMappingMsg.MappedModel)
 		}
-		result, err := h.gatewayService.ForwardAsAnthropic(c.Request.Context(), c, account, forwardBody, promptCacheKey, defaultMappedModel)
+
+		// 根据账号的 upstream_format 路由到对应的转发方法
+		upstreamFormat := account.GetUpstreamFormat()
+		reqLog.Warn("openai_messages.routing",
+			zap.Int64("account_id", account.ID),
+			zap.String("upstream_format", upstreamFormat),
+			zap.Any("account_extra", account.Extra),
+		)
+		var result *service.OpenAIForwardResult
+		err = nil
+		switch upstreamFormat {
+		case domain.UpstreamFormatChatCompletions:
+			result, err = h.gatewayService.ForwardAsAnthropicToChatCompletions(c.Request.Context(), c, account, forwardBody, promptCacheKey, defaultMappedModel)
+		default:
+			result, err = h.gatewayService.ForwardAsAnthropic(c.Request.Context(), c, account, forwardBody, promptCacheKey, defaultMappedModel)
+		}
 
 		forwardDurationMs := time.Since(forwardStart).Milliseconds()
 		if accountReleaseFunc != nil {

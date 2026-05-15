@@ -25,6 +25,7 @@ import (
 	"time"
 
 	"github.com/Wei-Shaw/sub2api/internal/config"
+	"github.com/Wei-Shaw/sub2api/internal/pkg/apicompat"
 	"github.com/Wei-Shaw/sub2api/internal/pkg/claude"
 	"github.com/Wei-Shaw/sub2api/internal/pkg/ctxkey"
 	"github.com/Wei-Shaw/sub2api/internal/pkg/logger"
@@ -4322,6 +4323,12 @@ func (s *GatewayService) Forward(ctx context.Context, c *gin.Context, account *A
 	// Web Search 模拟：纯 web_search 请求时，直接调用搜索 API 构造响应
 	if account != nil && s.shouldEmulateWebSearch(ctx, account, parsed.GroupID, parsed.Body) {
 		return s.handleWebSearchEmulation(ctx, c, account, parsed)
+	}
+
+	// Chat Completions 路由：账号配置 upstream_format=chat_completions 时，
+	// 将 Anthropic Messages 请求转换为 OpenAI Chat Completions 格式并转发。
+	if account != nil && account.GetUpstreamFormat() == UpstreamFormatChatCompletions {
+		return s.forwardAsChatCompletions(ctx, c, account, parsed, startTime)
 	}
 
 	if account != nil && account.IsAnthropicAPIKeyPassthroughEnabled() {
@@ -9572,4 +9579,269 @@ func (s *GatewayService) debugLogGatewaySnapshot(tag string, headers http.Header
 
 	// 写入文件（调试用，并发写入可能交错但不影响可读性）
 	_, _ = f.WriteString(buf.String())
+}
+
+
+// forwardAsChatCompletions 将 Anthropic Messages 请求转换为 OpenAI Chat Completions 格式，
+// 转发到上游 Chat Completions 端点，并将响应转换回 Anthropic 格式返回。
+func (s *GatewayService) forwardAsChatCompletions(
+	ctx context.Context,
+	c *gin.Context,
+	account *Account,
+	parsed *ParsedRequest,
+	startTime time.Time,
+) (*ForwardResult, error) {
+	// 1. 读取 cc_base_url（Chat Completions 专用 base URL）
+	ccBaseURL := account.GetExtraString("cc_base_url")
+	if ccBaseURL == "" {
+		ccBaseURL = account.GetBaseURL()
+	}
+	ccBaseURL = strings.TrimRight(ccBaseURL, "/")
+	targetURL := ccBaseURL + "/v1/chat/completions"
+
+	// 2. 解析 Anthropic 请求
+	var anthropicReq apicompat.AnthropicRequest
+	if err := json.Unmarshal(parsed.Body, &anthropicReq); err != nil {
+		return nil, fmt.Errorf("parse anthropic request: %w", err)
+	}
+
+	// 3. 转换为 Chat Completions 格式
+	chatReq, err := apicompat.AnthropicToChatCompletions(&anthropicReq)
+	if err != nil {
+		return nil, fmt.Errorf("convert to chat completions: %w", err)
+	}
+	chatReq.Stream = true // 上游始终使用流式
+
+	// 4. 模型映射
+	mappedModel := parsed.Model
+	if account.Type == AccountTypeAPIKey {
+		mappedModel = account.GetMappedModel(parsed.Model)
+	}
+	chatReq.Model = mappedModel
+
+	// 5. 序列化请求体
+	chatBody, err := json.Marshal(chatReq)
+	if err != nil {
+		return nil, fmt.Errorf("marshal chat completions request: %w", err)
+	}
+
+	// 6. 获取凭证
+	token, _, err := s.GetAccessToken(ctx, account)
+	if err != nil {
+		return nil, fmt.Errorf("get access token: %w", err)
+	}
+
+	logger.LegacyPrintf("service.gateway", "[ChatCompletions] account=%d model=%s url=%s", account.ID, mappedModel, targetURL)
+
+	// 7. 构建上游请求
+	upstreamReq, err := http.NewRequestWithContext(ctx, "POST", targetURL, bytes.NewReader(chatBody))
+	if err != nil {
+		return nil, err
+	}
+	upstreamReq.Header.Set("Content-Type", "application/json")
+	upstreamReq.Header.Set("Authorization", "Bearer "+token)
+
+	// 8. 发送请求
+	proxyURL := ""
+	if account.ProxyID != nil && account.Proxy != nil {
+		proxyURL = account.Proxy.URL()
+	}
+	resp, err := s.httpUpstream.DoWithTLS(upstreamReq, proxyURL, account.ID, account.Concurrency, nil)
+	if err != nil {
+		safeErr := sanitizeUpstreamErrorMessage(err.Error())
+		c.JSON(http.StatusBadGateway, gin.H{
+			"type":  "error",
+			"error": gin.H{"type": "upstream_error", "message": "Upstream request failed"},
+		})
+		return nil, fmt.Errorf("upstream request failed: %s", safeErr)
+	}
+	defer func() { _ = resp.Body.Close() }()
+
+	// 9. 错误处理
+	if resp.StatusCode >= 400 {
+		respBody, _ := io.ReadAll(io.LimitReader(resp.Body, 2<<20))
+		_ = resp.Body.Close()
+		upstreamMsg := strings.TrimSpace(string(respBody))
+
+		logger.LegacyPrintf("service.gateway", "[ChatCompletions] upstream error %d: %s", resp.StatusCode, upstreamMsg)
+
+		if resp.StatusCode >= 500 || resp.StatusCode == 429 {
+			return nil, &UpstreamFailoverError{
+				StatusCode:   resp.StatusCode,
+				ResponseBody: respBody,
+			}
+		}
+
+		c.Data(resp.StatusCode, "application/json", respBody)
+		return nil, fmt.Errorf("upstream error: %d message=%s", resp.StatusCode, upstreamMsg)
+	}
+
+	// 10. 处理正常响应
+	clientStream := parsed.Stream
+	if clientStream {
+		return s.handleChatCompletionsStreamToAnthropic(resp, c, anthropicReq.Model, startTime)
+	}
+	return s.handleChatCompletionsBufferedToAnthropic(resp, c, anthropicReq.Model, startTime)
+}
+
+// handleChatCompletionsStreamToAnthropic 将上游 Chat Completions SSE 流转换为 Anthropic SSE 流
+func (s *GatewayService) handleChatCompletionsStreamToAnthropic(
+	resp *http.Response,
+	c *gin.Context,
+	originalModel string,
+	startTime time.Time,
+) (*ForwardResult, error) {
+	c.Header("Content-Type", "text/event-stream")
+	c.Header("Cache-Control", "no-cache")
+	c.Header("Connection", "keep-alive")
+
+	state := apicompat.NewChatCompletionsEventToAnthropicState()
+
+	scanner := bufio.NewScanner(resp.Body)
+	scanner.Buffer(make([]byte, 0, 64*1024), defaultMaxLineSize)
+
+	firstTokenMs := int(time.Since(startTime).Milliseconds())
+
+	for scanner.Scan() {
+		line := scanner.Text()
+		if !strings.HasPrefix(line, "data: ") {
+			continue
+		}
+		data := strings.TrimPrefix(line, "data: ")
+		if data == "[DONE]" {
+			events := apicompat.FinalizeChatCompletionsAnthropicStream(state)
+			for _, evt := range events {
+				sse, _ := apicompat.ChatCompletionsAnthropicEventToSSE(evt)
+				c.Writer.Write([]byte(sse))
+				c.Writer.(http.Flusher).Flush()
+			}
+			break
+		}
+
+		var chunk apicompat.ChatCompletionsChunk
+		if err := json.Unmarshal([]byte(data), &chunk); err != nil {
+			continue
+		}
+
+		events := apicompat.ChatCompletionsEventToAnthropicEvents(&chunk, state)
+		for _, evt := range events {
+			sse, _ := apicompat.ChatCompletionsAnthropicEventToSSE(evt)
+			c.Writer.Write([]byte(sse))
+			c.Writer.(http.Flusher).Flush()
+		}
+	}
+
+	return &ForwardResult{
+		FirstTokenMs: &firstTokenMs,
+	}, nil
+}
+
+// handleChatCompletionsBufferedToAnthropic 将上游 Chat Completions SSE 流缓冲为完整响应
+func (s *GatewayService) handleChatCompletionsBufferedToAnthropic(
+	resp *http.Response,
+	c *gin.Context,
+	originalModel string,
+	startTime time.Time,
+) (*ForwardResult, error) {
+	scanner := bufio.NewScanner(resp.Body)
+	scanner.Buffer(make([]byte, 0, 64*1024), defaultMaxLineSize)
+
+	type accChoice struct {
+		msg           apicompat.ChatMessage
+		textContent   string
+	}
+	choices := make(map[int]*accChoice)
+	var finalResponse apicompat.ChatCompletionsResponse
+	var usage apicompat.ChatUsage
+
+	for scanner.Scan() {
+		line := scanner.Text()
+		if !strings.HasPrefix(line, "data: ") {
+			continue
+		}
+		data := strings.TrimPrefix(line, "data: ")
+		if data == "[DONE]" {
+			break
+		}
+
+		var chunk apicompat.ChatCompletionsChunk
+		if err := json.Unmarshal([]byte(data), &chunk); err != nil {
+			continue
+		}
+
+		if finalResponse.ID == "" && chunk.ID != "" {
+			finalResponse.ID = chunk.ID
+		}
+		if finalResponse.Model == "" && chunk.Model != "" {
+			finalResponse.Model = chunk.Model
+		}
+
+		for _, ch := range chunk.Choices {
+			idx := ch.Index
+			if choices[idx] == nil {
+				choices[idx] = &accChoice{}
+				choices[idx].msg.Role = "assistant"
+			}
+			acc := choices[idx]
+
+			if ch.Delta.Role != "" {
+				acc.msg.Role = ch.Delta.Role
+			}
+			if ch.Delta.Content != nil && *ch.Delta.Content != "" {
+				acc.textContent += *ch.Delta.Content
+			}
+			if ch.Delta.ReasoningContent != nil && *ch.Delta.ReasoningContent != "" {
+				acc.msg.ReasoningContent += *ch.Delta.ReasoningContent
+			}
+			for _, tc := range ch.Delta.ToolCalls {
+				acc.msg.ToolCalls = append(acc.msg.ToolCalls, tc)
+			}
+			if ch.FinishReason != nil {
+				fr := *ch.FinishReason
+				// 序列化累积的文本内容
+				if acc.textContent != "" {
+					b, _ := json.Marshal(acc.textContent)
+					acc.msg.Content = b
+				}
+				finalResponse.Choices = append(finalResponse.Choices, apicompat.ChatChoice{
+					Index:        idx,
+					Message:      acc.msg,
+					FinishReason: fr,
+				})
+			}
+		}
+
+		if chunk.Usage != nil {
+			usage = *chunk.Usage
+		}
+	}
+	finalResponse.Usage = &usage
+
+	if len(finalResponse.Choices) == 0 {
+		for idx, acc := range choices {
+			if acc.textContent != "" {
+				b, _ := json.Marshal(acc.textContent)
+				acc.msg.Content = b
+			}
+			finalResponse.Choices = append(finalResponse.Choices, apicompat.ChatChoice{
+				Index:        idx,
+				Message:      acc.msg,
+				FinishReason: "stop",
+			})
+		}
+	}
+
+	anthropicResp := apicompat.ChatCompletionsResponseToAnthropic(&finalResponse, originalModel)
+
+	respBody, err := json.Marshal(anthropicResp)
+	if err != nil {
+		return nil, err
+	}
+
+	firstTokenMs := int(time.Since(startTime).Milliseconds())
+	c.Data(http.StatusOK, "application/json", respBody)
+
+	return &ForwardResult{
+		FirstTokenMs: &firstTokenMs,
+	}, nil
 }

@@ -3662,6 +3662,46 @@ func writeOpenAIPassthroughResponseHeaders(dst http.Header, src http.Header, fil
 	}
 }
 
+func (s *OpenAIGatewayService) buildUpstreamChatCompletionsRequest(ctx context.Context, c *gin.Context, account *Account, body []byte, token string, isStream bool) (*http.Request, error) {
+	// Determine target URL based on account type
+	var targetURL string
+	baseURL := account.GetBaseURL()
+	if baseURL == "" {
+		targetURL = "https://api.openai.com/v1/chat/completions"
+	} else {
+		validatedURL, err := s.validateUpstreamBaseURL(baseURL)
+		if err != nil {
+			return nil, err
+		}
+		targetURL = buildOpenAIChatCompletionsURL(validatedURL)
+	}
+
+	req, err := http.NewRequestWithContext(ctx, "POST", targetURL, bytes.NewReader(body))
+	if err != nil {
+		return nil, err
+	}
+
+	// Set authentication header
+	req.Header.Set("authorization", "Bearer "+token)
+
+	// Whitelist passthrough headers
+	for key, values := range c.Request.Header {
+		lowerKey := strings.ToLower(key)
+		if openaiAllowedHeaders[lowerKey] {
+			for _, v := range values {
+				req.Header.Add(key, v)
+			}
+		}
+	}
+
+	// Ensure required headers exist
+	if req.Header.Get("content-type") == "" {
+		req.Header.Set("content-type", "application/json")
+	}
+
+	return req, nil
+}
+
 func (s *OpenAIGatewayService) buildUpstreamRequest(ctx context.Context, c *gin.Context, account *Account, body []byte, token string, isStream bool, promptCacheKey string, isCodexCLI bool) (*http.Request, error) {
 	// Determine target URL based on account type
 	var targetURL string
@@ -4786,6 +4826,21 @@ func (s *OpenAIGatewayService) validateUpstreamBaseURL(raw string) (string, erro
 		return "", fmt.Errorf("invalid base_url: %w", err)
 	}
 	return normalized, nil
+}
+
+// buildOpenAIChatCompletionsURL 组装 OpenAI Chat Completions 端点。
+// - base 以 /v1 结尾：追加 /chat/completions
+// - base 已是 /chat/completions：原样返回
+// - 其他情况：追加 /v1/chat/completions
+func buildOpenAIChatCompletionsURL(base string) string {
+	normalized := strings.TrimRight(strings.TrimSpace(base), "/")
+	if strings.HasSuffix(normalized, "/chat/completions") {
+		return normalized
+	}
+	if strings.HasSuffix(normalized, "/v1") {
+		return normalized + "/chat/completions"
+	}
+	return normalized + "/v1/chat/completions"
 }
 
 // buildOpenAIResponsesURL 组装 OpenAI Responses 端点。
